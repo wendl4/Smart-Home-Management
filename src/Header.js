@@ -1,4 +1,5 @@
 import React from 'react'
+import { FirebaseContext } from './Firebase';
 import SideMenu from './SideMenu'
 import PropTypes from 'prop-types'
 import { withStyles } from '@material-ui/core/styles'
@@ -42,9 +43,44 @@ const styles = theme => ({
   },
 });
 
+const TopAppBar = ({ authUser }) => (
+  <div>{authUser ? <StyledForSignedIn /> : <StyledForNotSignedIn />}</div>
+);
 
-function TopAppBar(props) {
-  const { classes } = props;
+const SignOutButton = ({ firebase }) => (
+  <button type="button" onClick={firebase.doSignOut}>
+    Sign Out
+  </button>
+)
+
+function ForSignedIn(props) {
+  const { classes } = props
+  return (
+    <React.Fragment>
+      <CssBaseline />
+      <AppBar position="static" color="primary" className={classes.appBar}>
+        <Toolbar className={classes.toolbar}>
+          <SideMenu />
+          <div>
+            <IconButton color="inherit">
+              <SearchIcon />
+            </IconButton>
+            <FirebaseContext.Consumer>
+              {firebase => <SignOutButton firebase={firebase} />}
+            </FirebaseContext.Consumer>
+            <IconButton color="inherit">
+              <MoreIcon />
+            </IconButton>
+          </div>
+        </Toolbar>
+      </AppBar>
+    </React.Fragment>
+  );
+}
+
+
+function ForNotSignedIn(props) {
+  const { classes } = props
   return (
     <React.Fragment>
       <CssBaseline />
@@ -65,8 +101,15 @@ function TopAppBar(props) {
   );
 }
 
-TopAppBar.propTypes = {
+const StyledForSignedIn = withStyles(styles)(ForSignedIn)
+const StyledForNotSignedIn = withStyles(styles)(ForNotSignedIn)
+
+ForSignedIn.propTypes = {
   classes: PropTypes.object.isRequired,
-};
+}
+
+ForNotSignedIn.propTypes = {
+  classes: PropTypes.object.isRequired,
+}
 
 export default withStyles(styles)(TopAppBar);

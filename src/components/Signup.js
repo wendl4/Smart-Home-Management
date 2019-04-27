@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { FirebaseContext } from './Firebase';
 import { withRouter } from "react-router-dom"
-import * as ROUTES from './config/routes';
+import * as ROUTES from '../config/routes';
 import PropTypes from 'prop-types';
 import Avatar from '@material-ui/core/Avatar';
 import Button from '@material-ui/core/Button';
@@ -78,6 +78,14 @@ class Signup extends Component {
 
     this.props.firebase
       .doCreateUserWithEmailAndPassword(email, passwordOne)
+      .then(authUser => {
+        // Create a user in your Firebase realtime database
+        return this.props.firebase
+          .user(authUser.user.uid)
+          .set({
+            email
+          })
+      })
       .then(authUser => {
         this.setState({ ...INITIAL_STATE });
         this.props.history.push(ROUTES.LOGIN);

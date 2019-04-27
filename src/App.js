@@ -1,14 +1,15 @@
 import React, { Component } from 'react';
 import { BrowserRouter as Router, Switch, Route } from "react-router-dom"
 import './App.css';
-import Home from './Home'
-import SignupPage from './Signup'
-import LoginPage from './Login'
-import SimpleTable from './ChartsTable'
-import Chart from './Chart'
-import Header from './Header'
+import Home from './components/Home'
+import SignupPage from './components/Signup'
+import LoginPage from './components/Login'
+import SimpleTable from './components/ChartsTable'
+import Chart from './components/Chart'
+import Header from './components/Header'
+import Editor from './utils/blueprintEditor'
 import * as ROUTES from './config/routes';
-import { withFirebase } from './Firebase';
+import { withFirebase } from './components/Firebase';
 
 class App extends Component {
 
@@ -33,6 +34,7 @@ class App extends Component {
           <Route path={ROUTES.LOGIN} component={LoginPage} />
           <Route path={ROUTES.SIMPLETABLE} component={SimpleTable} />
           <Route path={ROUTES.CHART} component={Chart} />
+          <Route path={ROUTES.EDITOR} component={Editor} />
         </Switch>
       </Router>
       </div>
@@ -44,7 +46,6 @@ class App extends Component {
       authUser
         ? this.setState({ authUser })
         : this.setState({ authUser: null })
-        console.log(this.state)
     })
   }
 

@@ -53,6 +53,8 @@ const SignOutButton = ({ firebase }) => (
   </button>
 )
 
+
+
 function ForSignedIn(props) {
   const { classes } = props
   return (

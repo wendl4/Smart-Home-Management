@@ -40,7 +40,8 @@ const styles = {
             login: "Login",
             chart: "Chart",
             chartsTable: "ChartsTable",
-            signup: "SignUp"
+            signup: "SignUp",
+            editor: "Editor"
         }
   
         const sideList = (

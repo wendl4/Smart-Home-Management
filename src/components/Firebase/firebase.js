@@ -1,15 +1,8 @@
 import app from 'firebase/app'
 import 'firebase/auth'
 import 'firebase/database'
+import { config } from '../../config/firebaseConfig';
 
-const config = {
-  apiKey: "AIzaSyD2EfDAI_5NUNz-Xj1aCZ3jlCe4QvY0q2s",
-  authDomain: "smarthomemanagement-8ce8e.firebaseapp.com",
-  databaseURL: "https://smarthomemanagement-8ce8e.firebaseio.com",
-  projectId: "smarthomemanagement-8ce8e",
-  storageBucket: "smarthomemanagement-8ce8e.appspot.com",
-  messagingSenderId: "850157476277"
-};
 
 class Firebase {
   constructor() {
@@ -39,6 +32,12 @@ class Firebase {
   user = uid => this.db.ref(`users/${uid}`)
 
   users = () => this.db.ref('users')
+
+  // *** Device API ***
+
+  device = did => this.db.ref(`devices/${did}`)
+
+  devices = () => this.db.ref(`devices`)
 }
 
 export default Firebase

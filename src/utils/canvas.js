@@ -1,12 +1,12 @@
 import React, { Component } from 'react'
 import DeviceCircle from './circle'
-import { withHandleDeletion } from './blueprintEditor'
+import { withHandleEvents } from './blueprintEditor'
 
 class Canvas extends Component {
 
     render() {
-        const MyLine = withHandleDeletion(Line)
-        const MyDeviceCircle = withHandleDeletion(DeviceCircle)
+        const MyLine = withHandleEvents(Line)
+        const MyDeviceCircle = withHandleEvents(DeviceCircle)
         return (
             <React.Fragment>
             {
@@ -29,6 +29,7 @@ class Canvas extends Component {
                                 r = {object.r}
                                 index = {index}
                                 key = {`object${index}`}
+                                id = {object.device_id}
                                 />
                         default:
                         return null
@@ -61,7 +62,7 @@ class Line extends Component {
 
     handleDeleteEvent(event) {
         event.stopPropagation()
-        this.props.handleDeletion(this.props.index)
+        this.props.handleEvents.handleDeletion(this.props.index)
     }
     
     render() {

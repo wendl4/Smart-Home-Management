@@ -25,9 +25,10 @@ const styles = theme => ({
 
 const HandleDeletionContext = React.createContext(null)
 
-export const withHandleDeletion = Component => props => (
+// make save and delete accessible for descentants
+export const withHandleEvents = Component => props => (
     <HandleDeletionContext.Consumer>
-    {handleDeletion => <Component {...props} handleDeletion={handleDeletion} />}
+    {handleEvents => <Component {...props} handleEvents={handleEvents} />}
     </HandleDeletionContext.Consumer>
 )
 
@@ -42,7 +43,9 @@ class Editor extends Component {
         shape : "line",
         topOffset : null,
         leftOffset : null,
-        objects : []
+        objects : [],
+        devices : [],
+        deletedDevices: []
     }
 
     this.drawing = null
@@ -57,14 +60,22 @@ class Editor extends Component {
     this.EditorRef = React.createRef();
   }
 
-  handleDeletion(index) {
-    let newObjects = [...this.state.objects]
-    newObjects[index] = newObjects[newObjects.length-1]
-    newObjects = newObjects.slice(0,newObjects.length-1) 
-    this.setState(state => ({
-        objects: newObjects
-    }))
-  }
+    handleDeletion(index) {
+        let newObjects = [...this.state.objects]
+        
+        // delete device from db
+        //this.props.firebase.device(newObjects[index].device_id).remove()
+        let deletedDevices = this.state.deletedDevices
+        if(newObjects[index].type === "Circle") {
+            deletedDevices = deletedDevices.concat(newObjects[index].device_id)
+        }
+        newObjects[index] = newObjects[newObjects.length-1]
+        newObjects = newObjects.slice(0,newObjects.length-1) 
+        this.setState(state => ({
+            objects: newObjects,
+            deletedDevices: deletedDevices
+        }))
+    }
 
   handleClick({nativeEvent}) {
     if (this.state.shape === "line") {
@@ -95,6 +106,17 @@ class Editor extends Component {
         }
 
         else {
+            this.drawing.r = Math.sqrt(Math.abs(nativeEvent.offsetX-this.drawing.cx) ** 2 + Math.abs(nativeEvent.offsetY-this.drawing.cy) ** 2)
+            let obj = Object.assign({}, this.drawing)
+
+            //create device object and add its index to blueprint object
+            let deviceRef = this.props.firebase.devices().push()
+            obj.device_id = deviceRef.path.pieces_[1]
+
+            this.setState(state => ({
+                objects: [...state.objects.slice(0,state.objects.length-1), obj],
+                devices: [...state.devices, deviceRef]
+            }))
             this.drawing = {type:"Circle"}
         }
     }
@@ -126,11 +148,22 @@ class Editor extends Component {
 
     handleSaveButton() {
         let currUser = this.props.firebase.auth.currentUser.uid
+        //add blueprint objects to user
         if (currUser) { 
             this.props.firebase.user(currUser).update({
                 blueprintObjects: this.state.objects
             })
         }
+        // create device
+        this.state.devices.forEach(deviceRef => {
+            deviceRef.set({
+                name: "defaultName"
+              })
+        })
+
+        this.state.deletedDevices.forEach(deviceId => {
+            this.props.firebase.device(deviceId).remove()
+        })
     }
 
     componentDidMount() {
@@ -165,7 +198,6 @@ class Editor extends Component {
     }
 
   render() {
-    console.log("length: "+this.state.objects.length)
     return (
         <div className="editorwindow">
             <h1> Blueprint editor </h1>
@@ -199,7 +231,7 @@ class Editor extends Component {
                  onMouseMove={this.handleMouseMove}
                  ref={this.EditorRef}
             >
-                <HandleDeletionContext.Provider value={this.handleDeletion} >
+                <HandleDeletionContext.Provider value={{handleDeletion:this.handleDeletion, handleSave:this.handleSaveButton}} >
                     <Canvas objects={this.state.objects}/>
                 </HandleDeletionContext.Provider>
             </svg>)}

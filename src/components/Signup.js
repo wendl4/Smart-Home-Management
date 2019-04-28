@@ -107,7 +107,7 @@ class Signup extends Component {
         passwordOne,
         passwordTwo,
         error,
-    } = this.state;
+    } = this.state
 
     const isInvalid =
     passwordOne !== passwordTwo ||

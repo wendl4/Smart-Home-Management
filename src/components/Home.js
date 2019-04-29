@@ -4,8 +4,11 @@ class Home extends Component {
 
     render() {
         return (
-            <div>
-                Home text
+            <div style={{textAlign:'center',marginTop:200}}>
+                <h1>Welcome to Smart Home Management!</h1>
+                <p>
+                    Continue by clicking side menu and Log in or Sign up.
+                </p>
             </div>
         );
     }

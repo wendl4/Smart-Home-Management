@@ -5,6 +5,11 @@ smart devices with webserver available in local network.
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
+## Startup Config
+
+In order to use application, you need to create firebaseConfig.js file in src/config and fill it with your firebase project credentials. For this purpose you can use src/config/firebaseConfigExample.js.
+
+
 ## Available Scripts
 
 In the project directory, you can run:

@@ -46,7 +46,7 @@ class DeviceTable extends Component {
 
   handleSubmit(event) {
     event.preventDefault()
-    this.props.saveData(this.state)
+    this.props.saveDeviceData(this.state)
   }
 
   render() {

@@ -35,20 +35,27 @@ const styles = {
     render() {
         const { classes } = this.props;
 
-        const subPages = {
+        const LoggedsubPages = {
+            home: "Home",
+            chart: "Chart",
+            chartsTable: "ChartsTable",
+            editor: "Editor",
+            viewer: "Viewer"
+        }
+        const NotLoggedsubPages = {
             home: "Home",
             login: "Login",
             chart: "Chart",
             chartsTable: "ChartsTable",
             signup: "SignUp",
-            editor: "Editor"
         }
-  
-        const sideList = (
+        
+        const subPages = this.props.authUser ? LoggedsubPages : NotLoggedsubPages
+        const sideList = ( 
             <div className={classes.list}>
                 <List>
                     {Object.keys(subPages).map((key) => (
-                    <Link to={key} key = {key} style={{textDecoration: 'none'}}>    
+                    <Link to={`/${key}`} key = {key} style={{textDecoration: 'none'}}>    
                         <ListItem button key={key}>
                             <ListItemIcon>
                                 <MailIcon />

@@ -1,5 +1,7 @@
 import React from 'react'
-import { FirebaseContext } from './Firebase';
+import * as ROUTES from '../config/routes'
+import { withFirebase } from './Firebase'
+import { withRouter } from 'react-router-dom'
 import SideMenu from './SideMenu'
 import PropTypes from 'prop-types'
 import { withStyles } from '@material-ui/core/styles'
@@ -44,11 +46,15 @@ const styles = theme => ({
 });
 
 const TopAppBar = ({ authUser }) => (
-  <div>{authUser ? <StyledForSignedIn /> : <StyledForNotSignedIn />}</div>
+  <div>{authUser ? <StyledForSignedIn authUser={authUser}/> : <StyledForNotSignedIn authUser={authUser} />}</div>
 );
 
-const SignOutButton = ({ firebase }) => (
-  <button type="button" onClick={firebase.doSignOut}>
+
+const SignOutButton = (props) => (
+  <button type="button" onClick={e => {
+    props.history.push(ROUTES.HOME)
+    props.firebase.doSignOut()
+  }}>
     Sign Out
   </button>
 )
@@ -57,19 +63,18 @@ const SignOutButton = ({ firebase }) => (
 
 function ForSignedIn(props) {
   const { classes } = props
+  const SignOut = withRouter(withFirebase(SignOutButton))
   return (
     <React.Fragment>
       <CssBaseline />
       <AppBar position="static" color="primary" className={classes.appBar}>
         <Toolbar className={classes.toolbar}>
-          <SideMenu />
+          <SideMenu authUser={props.authUser} />
           <div>
             <IconButton color="inherit">
               <SearchIcon />
             </IconButton>
-            <FirebaseContext.Consumer>
-              {firebase => <SignOutButton firebase={firebase} />}
-            </FirebaseContext.Consumer>
+              <SignOut/>
             <IconButton color="inherit">
               <MoreIcon />
             </IconButton>
@@ -88,7 +93,7 @@ function ForNotSignedIn(props) {
       <CssBaseline />
       <AppBar position="static" color="primary" className={classes.appBar}>
         <Toolbar className={classes.toolbar}>
-          <SideMenu />
+          <SideMenu authUser={props.authUser}/>
           <div>
             <IconButton color="inherit">
               <SearchIcon />

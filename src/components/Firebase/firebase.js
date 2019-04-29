@@ -38,6 +38,12 @@ class Firebase {
   device = did => this.db.ref(`devices/${did}`)
 
   devices = () => this.db.ref(`devices`)
+
+  // *** Device Actions API ***
+
+  deviceAction = did => this.db.ref(`device_actions/${did}`)
+
+  deviceActions = () => this.db.ref(`device_actions`)  
 }
 
 export default Firebase

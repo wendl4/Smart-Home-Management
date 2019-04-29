@@ -7,6 +7,7 @@ import LoginPage from './components/Login'
 import SimpleTable from './components/ChartsTable'
 import Chart from './components/Chart'
 import Header from './components/Header'
+import Viewer from './components/viewer/blueprintViewer'
 import Editor from './utils/blueprintEditor'
 import Device from './components/Device'
 import * as ROUTES from './config/routes';
@@ -36,6 +37,7 @@ class App extends Component {
           <Route path={ROUTES.SIMPLETABLE} component={SimpleTable} />
           <Route path={ROUTES.CHART} component={Chart} />
           <Route path={ROUTES.EDITOR} component={Editor} />
+          <Route path={ROUTES.VIEWER} component={Viewer} />
           <Route path={ROUTES.DEVICE} component={Device}/>
         </Switch>
       </Router>

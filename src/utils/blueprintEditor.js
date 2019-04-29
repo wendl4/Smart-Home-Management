@@ -64,7 +64,6 @@ class Editor extends Component {
         let newObjects = [...this.state.objects]
         
         // delete device from db
-        //this.props.firebase.device(newObjects[index].device_id).remove()
         let deletedDevices = this.state.deletedDevices
         if(newObjects[index].type === "Circle") {
             deletedDevices = deletedDevices.concat(newObjects[index].device_id)

@@ -30,6 +30,7 @@ class DeviceActionTable extends Component {
       super(props)
       const { classes } = props
       this.state = {
+          id: props.id,
           classes: classes,
           deviceId: props.action.deviceId,
           name: props.action.name,
@@ -38,6 +39,7 @@ class DeviceActionTable extends Component {
       }
       this.onChange = this.onChange.bind(this)
       this.handleSubmit = this.handleSubmit.bind(this)
+      this.deleteAction = this.deleteAction.bind(this)
   }
 
   onChange(event) {
@@ -46,14 +48,17 @@ class DeviceActionTable extends Component {
 
   handleSubmit(event) {
     event.preventDefault()
-    this.props.saveData(this.state)
+    this.props.saveActionData(this.state)
+  }
+
+  deleteAction() {
+    this.props.deleteAction(this.state.id)
   }
 
   render() {
     const { name, type, apiCall } = this.state
     return (
         <Paper className={this.state.classes.root}>
-        <form onSubmit={this.handleSubmit}>
         <Table className={this.state.classes.table}>
             <TableHead>
             <TableRow>
@@ -90,20 +95,18 @@ class DeviceActionTable extends Component {
                         <option></option>
                         <option value="controlled">Controlled</option>
                         <option value="sensor">Sensor</option>
-                        <option value="both">Both</option>
                         <option value="farm">Farm</option>
                     </Select>
                 </TableCell>
                 </TableRow>
                 <TableRow>
-                <TableCell> State </TableCell>
+                <TableCell> Api Call </TableCell>
                 <TableCell> 
                 <Input
-                    name="state"
-                    disabled={type!=="controlled" ? true : false}
-                    value={state}
+                    name="apiCall"
+                    value={apiCall}
                     onChange={this.onChange}
-                    id="state"
+                    id="apiCall"
                     fullWidth={true}
                 />
                 </TableCell>
@@ -113,14 +116,21 @@ class DeviceActionTable extends Component {
 
         </Table>
         <Button
-            type="submit"
+            onClick={this.handleSubmit}
             fullWidth
             variant="contained"
             color="primary"
         >
             Save
         </Button>
-        </form>
+        <Button
+            fullWidth
+            variant="contained"
+            color="secondary"
+            onClick={this.deleteAction}
+        >
+            Delete
+        </Button>
         </Paper>
     )
   }

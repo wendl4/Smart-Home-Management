@@ -53,6 +53,7 @@ const INITIAL_STATE = {
     email: '',
     passwordOne: '',
     passwordTwo: '',
+    role: 'user',
     error: null,
 };
 
@@ -74,25 +75,34 @@ class Signup extends Component {
   }
 
   onSubmit = event => {
-    const { email, passwordOne } = this.state;
+    const { email, passwordOne } = this.state
+    let { role } = this.state
 
     this.props.firebase
       .doCreateUserWithEmailAndPassword(email, passwordOne)
+      .then(
+        this.props.firebase.users().once("value", snapshot => {
+          if(snapshot.val() === null) {
+            role = 'admin'
+          }
+        })
+      )
       .then(authUser => {
         // Create a user in your Firebase realtime database
         return this.props.firebase
           .user(authUser.user.uid)
           .set({
-            email
+            email,
+            role
           })
       })
       .then(authUser => {
-        this.setState({ ...INITIAL_STATE });
-        this.props.history.push(ROUTES.LOGIN);
+        this.setState({ ...INITIAL_STATE })
+        this.props.history.push(ROUTES.EDITOR)
       })
       .catch(error => {
-        this.setState({ error });
-      });
+        this.setState({ error })
+      })
 
     event.preventDefault();  
   }

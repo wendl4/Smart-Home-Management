@@ -1,11 +1,12 @@
 import React, { Component } from 'react'
+import { withAutorization } from '../../components/session'
 import Canvas from './canvas'
-import { withFirebase } from '../components/Firebase'
-import CircularDeterminate from '../components/Loading'
+import { withFirebase } from '../../components/Firebase'
+import CircularDeterminate from '../../components/Loading'
 import "./blueprintEditor.css"
-import classNames from 'classnames';
-import Button from '@material-ui/core/Button';
-import { withStyles } from '@material-ui/core/styles';
+import classNames from 'classnames'
+import Button from '@material-ui/core/Button'
+import { withStyles } from '@material-ui/core/styles'
 import SaveIcon from '@material-ui/icons/Save'
 
 const styles = theme => ({
@@ -23,13 +24,13 @@ const styles = theme => ({
     },
   })
 
-const HandleDeletionContext = React.createContext(null)
+const HandleEventsContext = React.createContext(null)
 
 // make save and delete accessible for descentants
 export const withHandleEvents = Component => props => (
-    <HandleDeletionContext.Consumer>
+    <HandleEventsContext.Consumer>
     {handleEvents => <Component {...props} handleEvents={handleEvents} />}
-    </HandleDeletionContext.Consumer>
+    </HandleEventsContext.Consumer>
 )
 
 
@@ -169,7 +170,7 @@ class Editor extends Component {
         this.setState({ loading: true })
         this.firebaseListener = this.props.firebase.auth.onAuthStateChanged(authUser => {
             if (authUser) {
-                this.props.firebase.user(authUser.uid).on('value', snapshot => {   
+                this.props.firebase.user(authUser.uid).once('value', snapshot => {   
                     this.setState({
                         objects: snapshot.val().blueprintObjects != null ? snapshot.val().blueprintObjects : [],
                         loading: false
@@ -230,9 +231,9 @@ class Editor extends Component {
                  onMouseMove={this.handleMouseMove}
                  ref={this.EditorRef}
             >
-                <HandleDeletionContext.Provider value={{handleDeletion:this.handleDeletion, handleSave:this.handleSaveButton}} >
+                <HandleEventsContext.Provider value={{handleDeletion:this.handleDeletion, handleSave:this.handleSaveButton}} >
                     <Canvas objects={this.state.objects}/>
-                </HandleDeletionContext.Provider>
+                </HandleEventsContext.Provider>
             </svg>)}
             {this.state.loading && (<CircularDeterminate/>)}
         </div>
@@ -241,4 +242,6 @@ class Editor extends Component {
 
 }
 
-export default withFirebase(withStyles(styles)(Editor))
+const condition = authUser => !!authUser
+
+export default withAutorization(condition)(withFirebase(withStyles(styles)(Editor)))

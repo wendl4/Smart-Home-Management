@@ -24,7 +24,7 @@ class DeviceCircle extends Component {
 
     componentDidMount() {
         this.setState({ loading: true })
-        this.props.firebase.deviceActions().orderByChild("deviceId").equalTo(this.props.id).on('value', snapshot => {   
+        this.listener = this.props.firebase.deviceActions().orderByChild("deviceId").equalTo(this.props.id).on('value', snapshot => {   
             this.setState(state => ({
                  deviceActions: [snapshot.val()],
                  loading: false
@@ -46,7 +46,7 @@ class DeviceCircle extends Component {
     render() {
         const contextButton = this.state.deviceActions.length > 0 && this.state.clicked && (
             <React.Fragment>
-            {this.state.deviceActions.map(action =>
+            {(this.state.deviceActions.length > 0) || this.state.deviceActions.map(action =>
                 Object.keys(action).map(id =>
                     <g onClick={this.handleToggleEvent(action[id])} key={id}>
                         <rect x={this.props.cx-28} y={this.props.cy} width="60" height="20" stroke='#000' strokeWidth='2' fill='white' />
@@ -70,6 +70,10 @@ class DeviceCircle extends Component {
                 {contextButton}
             </React.Fragment>
         )
+    }
+
+    componentWillUnmount() {
+        this.listener()
     }
 }
 

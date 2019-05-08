@@ -1,5 +1,4 @@
 import React, { Component } from 'react'
-import { withFirebase } from '../components/Firebase'
 import { withRouter } from 'react-router-dom'
 
 class DeviceCircle extends Component {
@@ -29,7 +28,7 @@ class DeviceCircle extends Component {
     handleConfigEvent(event) {
         event.stopPropagation()
         this.props.handleEvents.handleSave()
-        this.props.history.push(`device/${this.props.id}`); 
+        this.props.history.push(`device/${this.props.id}`)
     }
     
     render() {
@@ -61,6 +60,7 @@ class DeviceCircle extends Component {
             </React.Fragment>
         )
     }
+
 }
 
-export default withRouter(withFirebase(DeviceCircle))
+export default withRouter(DeviceCircle)

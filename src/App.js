@@ -1,6 +1,6 @@
-import React, { Component } from 'react';
+import React, { Component } from 'react'
 import { BrowserRouter as Router, Switch, Route } from "react-router-dom"
-import './App.css';
+import './App.css'
 import Home from './components/Home'
 import SignupPage from './components/Signup'
 import LoginPage from './components/Login'
@@ -8,10 +8,12 @@ import SimpleTable from './components/ChartsTable'
 import Chart from './components/Chart'
 import Header from './components/Header'
 import Viewer from './components/viewer/blueprintViewer'
-import Editor from './utils/blueprintEditor'
+import Editor from './utils/blueprintEditor/blueprintEditor'
 import Device from './components/Device'
-import * as ROUTES from './config/routes';
-import { withFirebase } from './components/Firebase';
+import DeviceAction from './components/DeviceActionTable'
+import * as ROUTES from './config/routes'
+import { withFirebase } from './components/Firebase'
+import { provideAuthentication } from './components/session'
 
 class App extends Component {
 
@@ -39,6 +41,7 @@ class App extends Component {
           <Route path={ROUTES.EDITOR} component={Editor} />
           <Route path={ROUTES.VIEWER} component={Viewer} />
           <Route path={ROUTES.DEVICE} component={Device}/>
+          <Route path={ROUTES.DEVICEACTION} component={DeviceAction}/>
         </Switch>
       </Router>
       </div>
@@ -54,9 +57,9 @@ class App extends Component {
   }
 
   componentWillUnmount() {
-    this.listener();
+    this.listener()
   }
 
 }
 
-export default withFirebase(App);
+export default provideAuthentication(withFirebase(App))

@@ -2,7 +2,8 @@ import React, { Component } from 'react'
 import Canvas from './canvas'
 import { withFirebase } from '../Firebase'
 import CircularDeterminate from '../Loading'
-import { withStyles } from '@material-ui/core/styles';
+import { withStyles } from '@material-ui/core/styles'
+import { withAutorization } from '../session'
 
 const styles = theme => ({
     button: {
@@ -86,4 +87,6 @@ class Viewer extends Component {
 
 }
 
-export default withFirebase(withStyles(styles)(Viewer))
+const condition = authUser => !!authUser
+
+export default withAutorization(condition)(withFirebase(withStyles(styles)(Viewer)))

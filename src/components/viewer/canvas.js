@@ -1,12 +1,10 @@
 import React, { Component } from 'react'
 import DeviceCircle from './circle'
-import { withHandleEvents } from './blueprintViewer'
+import Line from './line'
 
 class Canvas extends Component {
 
     render() {
-        const MyLine = withHandleEvents(Line)
-        const MyDeviceCircle = withHandleEvents(DeviceCircle)
         return (
             <React.Fragment>
             {
@@ -14,7 +12,7 @@ class Canvas extends Component {
                     let index = this.props.objects.indexOf(object)
                     switch(object.type) {
                         case "Line":
-                        return <MyLine 
+                        return <Line 
                                 x1 = {object.x1} 
                                 x2 = {object.x2} 
                                 y1 = {object.y1} 
@@ -23,7 +21,7 @@ class Canvas extends Component {
                                 key = {`object${index}`}
                                 />
                         case "Circle":
-                        return <MyDeviceCircle 
+                        return <DeviceCircle 
                                 cx = {object.cx} 
                                 cy = {object.cy} 
                                 r = {object.r}
@@ -40,32 +38,6 @@ class Canvas extends Component {
         );
     }
 
-}
-
-class Line extends Component {
-
-    constructor(props) {
-        super(props)
-        this.state = {
-            clicked: false
-        }
-    }
-    
-    render() {
-        return (
-            <React.Fragment>
-                <line 
-                    x1={this.props.x1} 
-                    y1={this.props.y1} 
-                    x2={this.props.x2} 
-                    y2={this.props.y2} 
-                    strokeWidth='15'
-                    stroke='black' 
-                    onContextMenu={this.contextMenu}
-                />
-            </React.Fragment>
-        )
-    }
 }
 
 export default Canvas

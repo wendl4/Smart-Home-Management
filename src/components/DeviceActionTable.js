@@ -10,7 +10,10 @@ import Paper from '@material-ui/core/Paper'
 import Button from '@material-ui/core/Button'
 import Input from '@material-ui/core/Input'
 import Select from '@material-ui/core/Select'
-
+import { withFirebase } from '../components/Firebase'
+import { withRouter } from "react-router-dom"
+import CircularDeterminate from '../components/Loading'
+import { Link } from "react-router-dom"
 
 const styles = theme => ({
   root: {
@@ -30,16 +33,32 @@ class DeviceActionTable extends Component {
       super(props)
       const { classes } = props
       this.state = {
-          id: props.id,
           classes: classes,
-          deviceId: props.action.deviceId,
-          name: props.action.name,
-          apiCall: props.action.apiCall,
-          type: props.action.type
+          deviceId: "",
+          name: "",
+          apiCall: "",
+          type: "",
+          state: "",
       }
       this.onChange = this.onChange.bind(this)
       this.handleSubmit = this.handleSubmit.bind(this)
       this.deleteAction = this.deleteAction.bind(this)
+  }
+
+  componentDidMount() {
+    this.setState({ loading: true })
+    this.deviceActionListener = this.props.firebase.deviceAction(this.props.match.params.id).once('value', snapshot => {   
+      const action = snapshot.val()
+      const deviceState = action.state ? action.state : ""
+        this.setState(state => ({   
+          loading: false,
+          deviceId: action.deviceId,
+          name: action.name,
+          apiCall: action.apiCall,
+          type: action.type,
+          state: deviceState
+        }))
+    })
   }
 
   onChange(event) {
@@ -48,90 +67,134 @@ class DeviceActionTable extends Component {
 
   handleSubmit(event) {
     event.preventDefault()
-    this.props.saveActionData(this.state)
+    this.props.firebase.deviceAction(this.props.match.params.id).update({
+      deviceId: this.state.deviceId,
+      name: this.state.name,
+      type: this.state.type,
+      apiCall: this.state.apiCall,
+      state: this.state.state
+  })
   }
 
-  deleteAction() {
-    this.props.deleteAction(this.state.id)
+  deleteAction(id) {
+    this.props.firebase.deviceAction(this.props.match.params.id).remove()
+    this.props.history.push(`/device/${this.state.deviceId}`)
   }
 
   render() {
-    const { name, type, apiCall } = this.state
-    return (
-        <Paper className={this.state.classes.root}>
-        <Table className={this.state.classes.table}>
-            <TableHead>
-            <TableRow>
-                <TableCell>Parameter</TableCell>
-                <TableCell>Value</TableCell>
-            </TableRow>
-            </TableHead>
-            <TableBody>
-                <TableRow>
-                <TableCell> Name </TableCell>
-                <TableCell>
-                    <Input
-                        name="name"
-                        value={name}
-                        onChange={this.onChange}
-                        id="name"
-                        fullWidth={true}
-                    />
-                </TableCell>
-                </TableRow>
-                <TableRow>
-                <TableCell> Type </TableCell>
-                <TableCell>
-                    <Select
-                        native
-                        value={type}
-                        fullWidth={true}
-                        onChange={this.onChange}
-                        inputProps={{
-                        name: 'type',
-                        id: 'type',
-                        }}
-                    >
-                        <option></option>
-                        <option value="controlled">Controlled</option>
-                        <option value="sensor">Sensor</option>
-                        <option value="farm">Farm</option>
-                    </Select>
-                </TableCell>
-                </TableRow>
-                <TableRow>
-                <TableCell> Api Call </TableCell>
-                <TableCell> 
-                <Input
-                    name="apiCall"
-                    value={apiCall}
-                    onChange={this.onChange}
-                    id="apiCall"
-                    fullWidth={true}
-                />
-                </TableCell>
-                </TableRow>
-                
-            </TableBody>
+    const { name, type, apiCall, state } = this.state
 
-        </Table>
+    const deviceState = (
+      <TableRow>
+        <TableCell> State </TableCell>
+        <TableCell>
+            <Select
+                native
+                value={state}
+                fullWidth={true}
+                onChange={this.onChange}
+                inputProps={{
+                name: 'state',
+                id: 'state',
+                }}
+            >
+                <option></option>
+                <option value="controlled">On</option>
+                <option value="sensor">Off</option>
+            </Select>
+        </TableCell>
+      </TableRow>
+    )
+
+    const layout = (
+    <Paper className={this.state.classes.root}>
+      <Table className={this.state.classes.table}>
+          <TableHead>
+          <TableRow>
+              <TableCell>Parameter</TableCell>
+              <TableCell>Value</TableCell>
+          </TableRow>
+          </TableHead>
+          <TableBody>
+              <TableRow>
+              <TableCell> Name </TableCell>
+              <TableCell>
+                  <Input
+                      name="name"
+                      value={name}
+                      onChange={this.onChange}
+                      id="name"
+                      fullWidth={true}
+                  />
+              </TableCell>
+              </TableRow>
+              <TableRow>
+              <TableCell> Type </TableCell>
+              <TableCell>
+                  <Select
+                      native
+                      value={type}
+                      fullWidth={true}
+                      onChange={this.onChange}
+                      inputProps={{
+                      name: 'type',
+                      id: 'type',
+                      }}
+                  >
+                      <option></option>
+                      <option value="controlled">Controlled</option>
+                      <option value="sensor">Sensor</option>
+                      <option value="farm">Farm</option>
+                  </Select>
+              </TableCell>
+              </TableRow>
+                {(this.state.type !== "controlled") ? <TableRow></TableRow> : deviceState} 
+              <TableRow>
+              <TableCell> Api Call </TableCell>
+              <TableCell> 
+              <Input
+                  name="apiCall"
+                  value={apiCall}
+                  onChange={this.onChange}
+                  id="apiCall"
+                  fullWidth={true}
+              />
+              </TableCell>
+              </TableRow>
+              
+          </TableBody>
+
+      </Table>
+      <Button
+          onClick={this.handleSubmit}
+          fullWidth
+          variant="contained"
+          color="primary"
+      >
+          Save
+      </Button>
+      <Button
+          fullWidth
+          variant="contained"
+          color="secondary"
+          onClick={this.deleteAction}
+      >
+          Delete
+      </Button>
+      <Link to={`/device/${this.state.deviceId}`} style={{textDecoration:"none"}}>
         <Button
-            onClick={this.handleSubmit}
             fullWidth
             variant="contained"
-            color="primary"
         >
-            Save
+            Back To Device
         </Button>
-        <Button
-            fullWidth
-            variant="contained"
-            color="secondary"
-            onClick={this.deleteAction}
-        >
-            Delete
-        </Button>
-        </Paper>
+      </Link>
+      </Paper>
+    )
+    return (
+      <div style={{textAlign: 'center'}}>
+        {this.state.loading !== false ? <CircularDeterminate/> : layout}
+      </div>
     )
   }
 }
@@ -140,4 +203,4 @@ DeviceActionTable.propTypes = {
   classes: PropTypes.object.isRequired,
 };
 
-export default withStyles(styles)(DeviceActionTable);
+export default withRouter(withFirebase(withStyles(styles)(DeviceActionTable)))

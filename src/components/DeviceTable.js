@@ -50,7 +50,7 @@ class DeviceTable extends Component {
   }
 
   render() {
-    const { name, id, type, state } = this.state
+    const { name, id, type } = this.state
     return (
         <Paper className={this.state.classes.root}>
         <form onSubmit={this.handleSubmit}>
@@ -101,20 +101,6 @@ class DeviceTable extends Component {
                     </Select>
                 </TableCell>
                 </TableRow>
-                <TableRow>
-                <TableCell> State </TableCell>
-                <TableCell> 
-                <Input
-                    name="state"
-                    disabled={type!=="controlled" ? true : false}
-                    value={state}
-                    onChange={this.onChange}
-                    id="state"
-                    fullWidth={true}
-                />
-                </TableCell>
-                </TableRow>
-                
             </TableBody>
 
         </Table>

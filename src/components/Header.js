@@ -71,13 +71,9 @@ function ForSignedIn(props) {
         <Toolbar className={classes.toolbar}>
           <SideMenu authUser={props.authUser} />
           <div>
-            <IconButton color="inherit">
-              <SearchIcon />
-            </IconButton>
-              <SignOut/>
-            <IconButton color="inherit">
-              <MoreIcon />
-            </IconButton>
+
+            <SignOut/>
+
           </div>
         </Toolbar>
       </AppBar>

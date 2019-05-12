@@ -49,14 +49,14 @@ class DeviceActionTable extends Component {
     this.setState({ loading: true })
     this.deviceActionListener = this.props.firebase.deviceAction(this.props.match.params.id).once('value', snapshot => {   
       const action = snapshot.val()
-      const deviceState = action.state ? action.state : ""
+      const actionState = action.state ? action.state : ""
         this.setState(state => ({   
           loading: false,
           deviceId: action.deviceId,
           name: action.name,
           apiCall: action.apiCall,
           type: action.type,
-          state: deviceState
+          state: actionState
         }))
     })
   }
@@ -83,29 +83,7 @@ class DeviceActionTable extends Component {
 
   render() {
     const { name, type, apiCall, state } = this.state
-
-    const deviceState = (
-      <TableRow>
-        <TableCell> State </TableCell>
-        <TableCell>
-            <Select
-                native
-                value={state}
-                fullWidth={true}
-                onChange={this.onChange}
-                inputProps={{
-                name: 'state',
-                id: 'state',
-                }}
-            >
-                <option></option>
-                <option value="controlled">On</option>
-                <option value="sensor">Off</option>
-            </Select>
-        </TableCell>
-      </TableRow>
-    )
-
+    const disabled = this.state.type === "controlled" ? false : true
     const layout = (
     <Paper className={this.state.classes.root}>
       <Table className={this.state.classes.table}>
@@ -148,7 +126,25 @@ class DeviceActionTable extends Component {
                   </Select>
               </TableCell>
               </TableRow>
-                {(this.state.type !== "controlled") ? <TableRow></TableRow> : deviceState} 
+              <TableRow>
+                <TableCell> State </TableCell>
+                <TableCell>
+                    <Select
+                        native
+                        disabled = {disabled}
+                        value={state}
+                        fullWidth={true}
+                        onChange={this.onChange}
+                        inputProps={{
+                        name: 'state',
+                        id: 'state',
+                        }}
+                    >
+                        <option value="on">On</option>
+                        <option value="off">Off</option>
+                    </Select>
+                </TableCell>
+              </TableRow>
               <TableRow>
               <TableCell> Api Call </TableCell>
               <TableCell> 

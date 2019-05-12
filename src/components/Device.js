@@ -54,8 +54,7 @@ class Device extends Component {
     saveDeviceData(data) {
         this.props.firebase.device(this.props.match.params.id).update({
             name: data.name,
-            type: data.type,
-            state: "off"
+            type: data.type
         })
     }
 

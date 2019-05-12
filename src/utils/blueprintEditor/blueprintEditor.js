@@ -209,7 +209,10 @@ class Editor extends Component {
                 this.props.firebase.device(device.id).remove()  
                 this.props.firebase.deviceOwner(device.ownerTableId).remove()
                 this.props.firebase.deviceActions().orderByChild("deviceId").equalTo(device.id).once('value', snapshot => {
-                    snapshot.ref.remove()
+                    const deviceAction = snapshot.val()
+                    Object.keys(deviceAction).forEach(key => {
+                        this.props.firebase.deviceAction(key).remove()
+                    })
                 })
             }
         })

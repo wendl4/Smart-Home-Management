@@ -47,7 +47,8 @@ class Editor extends Component {
         objects : [],
         devices : [],
         newDevices : [],
-        deletedDevices: []
+        deletedDevices: [],
+        backgroundImageUrl: null
     }
 
     this.drawing = null
@@ -59,9 +60,23 @@ class Editor extends Component {
     this.handleSaveButton = this.handleSaveButton.bind(this)
     this.switchToCircle = this.switchToCircle.bind(this)
     this.switchToLine = this.switchToLine.bind(this)
+    this.handleUpload = this.handleUpload.bind(this)
 
     this.EditorRef = React.createRef();
   }
+
+    handleUpload() {
+        const file = this.file.files[0]
+        const storageRef = this.props.firebase.storage.ref()
+        const mainImage = storageRef.child("blueprint")
+        mainImage.put(file).then((snapshot) => {
+            mainImage.getDownloadURL().then((url) =>
+                this.setState({
+                    backgroundImageUrl: url
+                })
+            )
+        })
+    }
 
     handleObjectDeletion(index) {
         let newObjects = [...this.state.objects]
@@ -227,6 +242,15 @@ class Editor extends Component {
                         loading: false
                     })
                 })
+
+                var pathReference = this.props.firebase.storage.ref('blueprint')
+                pathReference.getDownloadURL().then(function(url) {
+                    this.setState({
+                        backgroundImageUrl: url
+                    })
+                }.bind(this)).catch(function(error) {
+                    console.log(error.message)
+                  })
             }
         })
     }
@@ -248,48 +272,65 @@ class Editor extends Component {
         }))
     }
 
-  render() {
-    return (
-        <div className="editorwindow">
-            <h1> Blueprint editor </h1>
-            <p>
-                <Button 
-                    variant="contained"
-                    size="small"
-                    onClick={this.switchToCircle} 
-                    className={this.props.classes.button}>
-                    Add Device
-                </Button>
+    setRef = ref => {
+        this.file = ref 
+    }
 
-                <Button 
-                    variant="contained"
-                    size="small"
-                    onClick={this.switchToLine} 
-                    className={this.props.classes.button}>
-                    Add Wall
-                </Button>
+    render() {
+        let backgroundImage = (this.state.backgroundImageUrl) ? <image xlinkHref={this.state.backgroundImageUrl} style={{margin:'auto'}} width='800px' height='600px' /> : ""
+        return (
+            <div className="editorwindow">
+                <h1> Blueprint editor </h1>
+                <p>
+                    <Button 
+                        variant="contained"
+                        size="small"
+                        onClick={this.switchToCircle} 
+                        className={this.props.classes.button}>
+                        Add Device
+                    </Button>
 
-                <Button variant="contained" size="small" onClick={this.handleSaveButton} className={this.props.classes.button}>
-                    <SaveIcon className={classNames(this.props.classes.leftIcon, this.props.classes.iconSmall)} />
-                        Save
-                </Button>
-            </p>
-            {!this.state.loading && (<svg xmlns='http://www.w3.org/2000/svg'
-                 width="800px" 
-                 height="600px" 
-                 className="editor" 
-                 onClick={this.handleClick}
-                 onMouseMove={this.handleMouseMove}
-                 ref={this.EditorRef}
-            >
-                <HandleEventsContext.Provider value={{handleObjectDeletion: this.handleObjectDeletion, handleDeviceDeletion: this.handleDeviceDeletion, handleSave:this.handleSaveButton}} >
-                    <Canvas objects={this.state.objects} devices={this.state.devices}/>
-                </HandleEventsContext.Provider>
-            </svg>)}
-            {this.state.loading && (<CircularDeterminate/>)}
-        </div>
-    );
-  }
+                    <Button 
+                        variant="contained"
+                        size="small"
+                        onClick={this.switchToLine} 
+                        className={this.props.classes.button}>
+                        Add Wall
+                    </Button>
+
+                    <Button variant="contained" size="small" onClick={this.handleSaveButton} className={this.props.classes.button}>
+                        <SaveIcon className={classNames(this.props.classes.leftIcon, this.props.classes.iconSmall)} />
+                            Save
+                    </Button>
+                </p>
+                {!this.state.loading && (
+                <svg xmlns='http://www.w3.org/2000/svg'
+                    xmlnsXlink='http://www.w3.org/1999/xlink'
+                    width="800px" 
+                    height="600px" 
+                    className="editor" 
+                    onClick={this.handleClick}
+                    onMouseMove={this.handleMouseMove}
+                    ref={this.EditorRef}
+                >
+                    <HandleEventsContext.Provider value={{handleObjectDeletion: this.handleObjectDeletion, handleDeviceDeletion: this.handleDeviceDeletion, handleSave:this.handleSaveButton}} >
+                        {backgroundImage}
+                        <Canvas objects={this.state.objects} devices={this.state.devices}/>
+                    </HandleEventsContext.Provider>
+                </svg>)}
+                {this.state.loading && (<CircularDeterminate/>)}
+                <br/>
+                <div>
+                    <p>If you want to upload custom PNG blueprint background</p>
+                    <input type="file" ref={this.setRef}/>
+                    <br/>
+                    <Button variant="contained" component="span" onClick={this.handleUpload} className={this.props.classes.button}>
+                        Upload
+                    </Button>
+                </div>
+            </div>
+        )
+    }
 
 }
 

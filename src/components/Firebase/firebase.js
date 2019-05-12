@@ -1,6 +1,7 @@
 import app from 'firebase/app'
 import 'firebase/auth'
 import 'firebase/database'
+import 'firebase/storage'
 import { config } from '../../config/firebaseConfig';
 
 
@@ -10,6 +11,7 @@ class Firebase {
 
     this.auth = app.auth()
     this.db = app.database()
+    this.storage = app.storage()
   }
 
   // *** Auth API ***

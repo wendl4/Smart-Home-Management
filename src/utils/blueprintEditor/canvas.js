@@ -13,28 +13,27 @@ class Canvas extends Component {
             {
                 this.props.objects.map(function(object) {
                     let index = this.props.objects.indexOf(object)
-                    switch(object.type) {
-                        case "Line":
-                        return <MyLine 
-                                x1 = {object.x1} 
-                                x2 = {object.x2} 
-                                y1 = {object.y1} 
-                                y2 = {object.y2}
-                                index = {index}
-                                key = {`object${index}`}
-                                />
-                        case "Circle":
-                        return <MyDeviceCircle 
-                                cx = {object.cx} 
-                                cy = {object.cy} 
-                                r = {object.r}
-                                index = {index}
-                                key = {`object${index}`}
-                                id = {object.device_id}
-                                />
-                        default:
-                        return null
-                    }
+                    return <MyLine 
+                            x1 = {object.x1} 
+                            x2 = {object.x2} 
+                            y1 = {object.y1} 
+                            y2 = {object.y2}
+                            index = {index}
+                            key = {`object${index}`}
+                            />
+                }.bind(this))
+            }
+            {
+                this.props.devices.map(function(device) {
+                    let index = this.props.devices.indexOf(device)
+                    return <MyDeviceCircle 
+                            cx = {device.cx} 
+                            cy = {device.cy} 
+                            r = {device.r}
+                            index = {index}
+                            id = {device.ref ? device.ref.path.pieces_[1] : device.id}
+                            key = {`object${index}`}
+                            />
                 }.bind(this))
             }
             </React.Fragment>

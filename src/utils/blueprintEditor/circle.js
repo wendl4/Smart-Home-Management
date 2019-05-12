@@ -22,7 +22,7 @@ class DeviceCircle extends Component {
 
     handleDeleteEvent(event) {
         event.stopPropagation()
-        this.props.handleEvents.handleDeletion(this.props.index)
+        this.props.handleEvents.handleDeviceDeletion(this.props.index)
     }
 
     handleConfigEvent(event) {

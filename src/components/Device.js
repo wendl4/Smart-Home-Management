@@ -61,15 +61,15 @@ class Device extends Component {
 
     addAction() {
         let obj = {}
-        let deviceRef = this.props.firebase.deviceActions().push()
-        const actionType = (this.state.device.type === "both") ? "" : this.state.device.type
+        let deviceActionRef = this.props.firebase.deviceActions().push()
+        const actionType = (this.state.device.type === "both" || this.state.device.type === undefined) ? "" : this.state.device.type
         const actionTemplate = {deviceId: this.props.match.params.id, name: "New action", apiCall: "", type: actionType}
-        deviceRef.set(actionTemplate)
-        obj[deviceRef.path.pieces_[1]] = actionTemplate
-        this.setState(state => ({
-            deviceActions: [...state.deviceActions,obj],
-            loading: false
-       }))
+        deviceActionRef.set(actionTemplate)
+         obj[deviceActionRef.path.pieces_[1]] = actionTemplate
+         this.setState(state => ({
+             deviceActions: [...state.deviceActions,obj],
+             loading: false
+        }))
     }
 
     render() {

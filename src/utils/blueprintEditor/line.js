@@ -20,7 +20,7 @@ class Line extends Component {
 
     handleDeleteEvent(event) {
         event.stopPropagation()
-        this.props.handleEvents.handleDeletion(this.props.index)
+        this.props.handleEvents.handleObjectDeletion(this.props.index)
     }
     
     render() {

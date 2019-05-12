@@ -46,13 +46,15 @@ class Editor extends Component {
         leftOffset : null,
         objects : [],
         devices : [],
+        newDevices : [],
         deletedDevices: []
     }
 
     this.drawing = null
 
     this.handleClick = this.handleClick.bind(this)
-    this.handleDeletion = this.handleDeletion.bind(this)
+    this.handleObjectDeletion = this.handleObjectDeletion.bind(this)
+    this.handleDeviceDeletion = this.handleDeviceDeletion.bind(this)
     this.handleMouseMove = this.handleMouseMove.bind(this)
     this.handleSaveButton = this.handleSaveButton.bind(this)
     this.switchToCircle = this.switchToCircle.bind(this)
@@ -61,70 +63,78 @@ class Editor extends Component {
     this.EditorRef = React.createRef();
   }
 
-    handleDeletion(index) {
+    handleObjectDeletion(index) {
         let newObjects = [...this.state.objects]
-        
-        // delete device from db
-        let deletedDevices = this.state.deletedDevices
-        if(newObjects[index].type === "Circle") {
-            deletedDevices = deletedDevices.concat(newObjects[index].device_id)
-        }
         newObjects[index] = newObjects[newObjects.length-1]
         newObjects = newObjects.slice(0,newObjects.length-1) 
         this.setState(state => ({
             objects: newObjects,
+        }))
+    }
+
+    handleDeviceDeletion(index) {
+        let newDevices = [...this.state.devices]
+        
+        // delete device from db
+        let deletedDevices = this.state.deletedDevices
+        deletedDevices = deletedDevices.concat(newDevices[index])
+
+        newDevices[index] = newDevices[newDevices.length-1]
+        newDevices = newDevices.slice(0,newDevices.length-1) 
+        this.setState(state => ({
+            devices: newDevices,
             deletedDevices: deletedDevices
         }))
     }
 
-  handleClick({nativeEvent}) {
-    if (this.state.shape === "line") {
-        if (!this.state.drawing) {
-            this.drawing = {type:"Line"}
-            this.drawing.x1 = nativeEvent.offsetX
-            this.drawing.y1 = nativeEvent.offsetY
-            this.setState(state => ({ // to make sure we dont remove existing object while moving cursor
-                objects: [...state.objects, {}]
-            }))
+
+    handleClick({nativeEvent}) {
+        if (this.state.shape === "line") {
+            if (!this.state.drawing) {
+                this.drawing = {type:"Line"}
+                this.drawing.x1 = nativeEvent.offsetX
+                this.drawing.y1 = nativeEvent.offsetY
+                this.setState(state => ({ // to make sure we dont remove existing object while moving cursor
+                    objects: [...state.objects, {}]
+                }))
+            }
+
+            else {
+                this.drawing.x2 = nativeEvent.offsetX
+                this.drawing.y2 = nativeEvent.offsetY
+                this.drawing = {type:"Line"}
+            }
         }
 
-        else {
-            this.drawing.x2 = nativeEvent.offsetX
-            this.drawing.y2 = nativeEvent.offsetY
-            this.drawing = {type:"Line"}
-        }
+        else if (this.state.shape === "circle") {
+            if (!this.state.drawing) {
+                this.drawing = {}
+                this.drawing.cx = nativeEvent.offsetX
+                this.drawing.cy = nativeEvent.offsetY
+                this.setState(state => ({ // to make sure we dont remove existing object while moving cursor
+                    devices: [...state.devices, {}]
+                }))
+            }
+
+            else {
+                this.drawing.r = Math.sqrt(Math.abs(nativeEvent.offsetX-this.drawing.cx) ** 2 + Math.abs(nativeEvent.offsetY-this.drawing.cy) ** 2)
+                let obj = Object.assign({}, this.drawing)
+
+                //create device object and add its index to blueprint object
+                let deviceRef = this.props.firebase.devices().push()
+                obj.ref = deviceRef
+
+                this.setState(state => ({
+                    devices: [...state.devices.slice(0,state.devices.length-1), obj]
+                }))
+                this.drawing = {}
+            }
+        }   
+
+        this.setState(state => ({
+            drawing: !state.drawing,
+        }))
     }
-
-    else if (this.state.shape === "circle") {
-        if (!this.state.drawing) {
-            this.drawing = {type:"Circle"}
-            this.drawing.cx = nativeEvent.offsetX
-            this.drawing.cy = nativeEvent.offsetY
-            this.setState(state => ({ // to make sure we dont remove existing object while moving cursor
-                objects: [...state.objects, {}]
-            }))
-        }
-
-        else {
-            this.drawing.r = Math.sqrt(Math.abs(nativeEvent.offsetX-this.drawing.cx) ** 2 + Math.abs(nativeEvent.offsetY-this.drawing.cy) ** 2)
-            let obj = Object.assign({}, this.drawing)
-
-            //create device object and add its index to blueprint object
-            let deviceRef = this.props.firebase.devices().push()
-            obj.device_id = deviceRef.path.pieces_[1]
-
-            this.setState(state => ({
-                objects: [...state.objects.slice(0,state.objects.length-1), obj],
-                devices: [...state.devices, deviceRef]
-            }))
-            this.drawing = {type:"Circle"}
-        }
-    }
-
-    this.setState(state => ({
-        drawing: !state.drawing,
-    }))
-  }
 
     handleMouseMove({nativeEvent}) {
         if (this.state.drawing) {
@@ -140,7 +150,7 @@ class Editor extends Component {
                 this.drawing.r = Math.sqrt(Math.abs(nativeEvent.offsetX-this.drawing.cx) ** 2 + Math.abs(nativeEvent.offsetY-this.drawing.cy) ** 2)
                 let obj = Object.assign({}, this.drawing)
                 this.setState(state => ({
-                    objects: [...state.objects.slice(0,state.objects.length-1), obj]
+                    devices: [...state.devices.slice(0,state.devices.length-1), obj]
                 }))
             }
         }
@@ -155,14 +165,38 @@ class Editor extends Component {
             })
         }
         // create device
-        this.state.devices.forEach(deviceRef => {
-            deviceRef.set({
-                name: "defaultName"
-              })
+        this.state.devices.forEach(device => {
+            const deviceRef = device.ref
+            if (deviceRef) {
+                // save device to database
+                deviceRef.set({
+                    name: "defaultName",
+                    cx: device.cx,
+                    cy: device.cy,
+                    r: device.r
+                })
+                device.id = device.ref.path.pieces_[1]
+
+                // save connection user <-> device
+                const deviceOwnerRef = this.props.firebase.deviceOwners().push()
+                deviceOwnerRef.set({
+                    userId: currUser,
+                    deviceId: device.ref.path.pieces_[1]
+                })
+                device.ownerTableId = deviceOwnerRef.path.pieces_[1]
+
+                delete device.ref
+            }
         })
 
-        this.state.deletedDevices.forEach(deviceId => {
-            this.props.firebase.device(deviceId).remove()
+        this.state.deletedDevices.forEach(device => {
+            if (device.id) {
+                this.props.firebase.device(device.id).remove()  
+                this.props.firebase.deviceOwner(device.ownerTableId).remove()
+                this.props.firebase.deviceActions().orderByChild("deviceId").equalTo(device.id).once('value', snapshot => {
+                    snapshot.ref.remove()
+                })
+            }
         })
     }
 
@@ -170,7 +204,24 @@ class Editor extends Component {
         this.setState({ loading: true })
         this.firebaseListener = this.props.firebase.auth.onAuthStateChanged(authUser => {
             if (authUser) {
-                this.props.firebase.user(authUser.uid).once('value', snapshot => {   
+                this.props.firebase.deviceOwners().orderByChild("userId").equalTo(authUser.uid).once('value', snapshot => {
+                    const deviceOwners = snapshot.val()
+                    if (deviceOwners) {
+                        Object.keys(deviceOwners).forEach(id => { 
+                            this.props.firebase.device(deviceOwners[id].deviceId).once('value', snapshot => {
+                                let device = snapshot.val()
+                                if (device) {
+                                    device.id = deviceOwners[id].deviceId
+                                    device.ownerTableId = id
+                                    this.setState( state => ({
+                                        devices: [...state.devices,device],
+                                    }))
+                                }
+                            })
+                        })
+                    }
+                })
+                this.props.firebase.user(authUser.uid).once('value', snapshot => {
                     this.setState({
                         objects: snapshot.val().blueprintObjects != null ? snapshot.val().blueprintObjects : [],
                         loading: false
@@ -231,8 +282,8 @@ class Editor extends Component {
                  onMouseMove={this.handleMouseMove}
                  ref={this.EditorRef}
             >
-                <HandleEventsContext.Provider value={{handleDeletion:this.handleDeletion, handleSave:this.handleSaveButton}} >
-                    <Canvas objects={this.state.objects}/>
+                <HandleEventsContext.Provider value={{handleObjectDeletion: this.handleObjectDeletion, handleDeviceDeletion: this.handleDeviceDeletion, handleSave:this.handleSaveButton}} >
+                    <Canvas objects={this.state.objects} devices={this.state.devices}/>
                 </HandleEventsContext.Provider>
             </svg>)}
             {this.state.loading && (<CircularDeterminate/>)}

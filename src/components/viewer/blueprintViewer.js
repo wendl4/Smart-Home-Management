@@ -52,7 +52,7 @@ class Viewer extends Component {
         this.setState({ loading: true })
         this.firebaseListener = this.props.firebase.auth.onAuthStateChanged(authUser => {
             if (authUser) {
-                this.props.firebase.user(authUser.uid).on('value', snapshot => {   
+                this.props.firebase.user(authUser.uid).once('value', snapshot => {   
                     this.setState({
                         objects: snapshot.val().blueprintObjects != null ? snapshot.val().blueprintObjects : [],
                         loading: false
@@ -60,11 +60,6 @@ class Viewer extends Component {
                 })
             }
         })
-    }
-
-    componentWillUnmount() {
-        this.props.firebase.users().off()
-        this.firebaseListener()
     }
 
   render() {

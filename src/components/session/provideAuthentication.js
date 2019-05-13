@@ -17,12 +17,14 @@ const provideAuthentication = Component => {
       this.listener = this.props.firebase.auth.onAuthStateChanged( authUser => {
           authUser ? this.setState({ authUser }) : this.setState({ authUser: null })
 
-          this.props.firebase.user(this.state.authUser.uid).once('value', snapshot => {
+          if(authUser) {
+            this.props.firebase.user(this.state.authUser.uid).once('value', snapshot => {
 
-            this.setState({
-              role: snapshot.val().role
+              this.setState({
+                role: snapshot.val().role
+              })
             })
-          })
+          }
         },
       )
     }

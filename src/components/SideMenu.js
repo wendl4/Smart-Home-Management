@@ -10,6 +10,7 @@ import ListItemText from '@material-ui/core/ListItemText'
 import MailIcon from '@material-ui/icons/Mail'
 import IconButton from '@material-ui/core/IconButton'
 import MenuIcon from '@material-ui/icons/Menu'
+import { withFirebase } from './Firebase'
 
 
 const styles = {
@@ -22,35 +23,47 @@ const styles = {
 };
   
   class SideMenu extends Component {
+
     state = {
       left: false,
-    };
+    }
+
+    componentDidMount() {
+        if (this.props.authUser) {
+            this.props.firebase.user(this.props.authUser.uid).on('value', snapshot => {
+                this.setState({
+                    userRole: snapshot.val().role
+                })
+            })
+        }
+        
+    }
   
     toggleDrawer = (side, open) => () => {
       this.setState({
         [side]: open,
-      });
-    };
+      })
+    }
   
     render() {
         const { classes } = this.props;
 
         const LoggedsubPages = {
             home: "Home",
-            chart: "Chart",
-            chartsTable: "ChartsTable",
             editor: "Editor",
             viewer: "Viewer"
         }
         const NotLoggedsubPages = {
             home: "Home",
             login: "Login",
-            chart: "Chart",
-            chartsTable: "ChartsTable",
             signup: "SignUp",
         }
         
-        const subPages = this.props.authUser ? LoggedsubPages : NotLoggedsubPages
+        
+        let subPages = this.props.authUser ? LoggedsubPages : NotLoggedsubPages
+
+        subPages = (this.state.userRole === "admin" || this.state.userRole === "farmer") ? {...subPages, chartsTable: "ChartsTable"} : subPages
+        subPages = (this.state.userRole === "admin") ? {...subPages, adminpanel: "AdminPanel"} : subPages
         const sideList = ( 
             <div className={classes.list}>
                 <List>
@@ -93,4 +106,4 @@ const styles = {
     classes: PropTypes.object.isRequired,
   };
   
-  export default withStyles(styles)(SideMenu);
+  export default withFirebase(withStyles(styles)(SideMenu))

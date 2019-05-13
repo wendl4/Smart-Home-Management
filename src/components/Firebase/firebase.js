@@ -52,6 +52,10 @@ class Firebase {
   deviceOwner = did => this.db.ref(`device_owners/${did}`)
 
   deviceOwners = () => this.db.ref(`device_owners`)
+
+  // *** Farm sensor data API ***
+
+  farmSensorDatas = () => this.db.ref(`farm_sensor_data`)
 }
 
 export default Firebase

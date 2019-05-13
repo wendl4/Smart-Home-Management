@@ -1,16 +1,21 @@
-import React from 'react';
-import PropTypes from 'prop-types';
-import { withStyles } from '@material-ui/core/styles';
-import Table from '@material-ui/core/Table';
-import TableBody from '@material-ui/core/TableBody';
-import TableCell from '@material-ui/core/TableCell';
-import TableHead from '@material-ui/core/TableHead';
-import TableRow from '@material-ui/core/TableRow';
-import Paper from '@material-ui/core/Paper';
+import React, { Component } from 'react'
+import { Link } from "react-router-dom"
+import PropTypes from 'prop-types'
+import { withStyles } from '@material-ui/core/styles'
+import Table from '@material-ui/core/Table'
+import TableBody from '@material-ui/core/TableBody'
+import TableCell from '@material-ui/core/TableCell'
+import TableHead from '@material-ui/core/TableHead'
+import TableRow from '@material-ui/core/TableRow'
+import Paper from '@material-ui/core/Paper'
+import { withFirebase } from './Firebase'
+import { withAuthentication } from './session'
 
 const styles = theme => ({
   root: {
-    width: '100%',
+    width: '30%',
+    textAlign: 'center',
+    margin: 'auto',
     marginTop: theme.spacing.unit * 3,
     overflowX: 'auto',
   },
@@ -19,55 +24,76 @@ const styles = theme => ({
   },
 });
 
-let id = 0;
-function createData(name, calories, fat, carbs, protein) {
-  id += 1;
-  return { id, name, calories, fat, carbs, protein };
-}
 
-const rows = [
-  createData('Frozen yoghurt', 159, 6.0, 24, 4.0),
-  createData('Ice cream sandwich', 237, 9.0, 37, 4.3),
-  createData('Eclair', 262, 16.0, 24, 6.0),
-  createData('Cupcake', 305, 3.7, 67, 4.3),
-  createData('Gingerbread', 356, 16.0, 49, 3.9),
-];
+class SimpleTable extends Component {
 
-function SimpleTable(props) {
-  const { classes } = props;
+  constructor(props) {
+    super(props)
 
-  return (
-    <Paper className={classes.root}>
-      <Table className={classes.table}>
-        <TableHead>
-          <TableRow>
-            <TableCell>Dessert (100g serving)</TableCell>
-            <TableCell align="right">Calories</TableCell>
-            <TableCell align="right">Fat (g)</TableCell>
-            <TableCell align="right">Carbs (g)</TableCell>
-            <TableCell align="right">Protein (g)</TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {rows.map(row => (
-            <TableRow key={row.id}>
-              <TableCell component="th" scope="row">
-                {row.name}
-              </TableCell>
-              <TableCell align="right">{row.calories}</TableCell>
-              <TableCell align="right">{row.fat}</TableCell>
-              <TableCell align="right">{row.carbs}</TableCell>
-              <TableCell align="right">{row.protein}</TableCell>
+    this.state = {
+      devices : []
+    }
+  }
+
+  componentDidMount() {
+    this.firebaseListener = this.props.firebase.auth.onAuthStateChanged(authUser => {
+      if (authUser) {
+        this.props.firebase.deviceOwners().orderByChild("userId").equalTo(authUser.uid).once('value', snapshot => {
+          const deviceOwners = snapshot.val()
+          if (deviceOwners) {
+              Object.keys(deviceOwners).forEach(id => { 
+                this.props.firebase.device(deviceOwners[id].deviceId).once('value', snapshot => {
+                    let device = snapshot.val()
+                    if (device && device.type === "farm") {
+                      device.id = deviceOwners[id].deviceId
+                      this.setState( state => ({
+                        devices: [...state.devices,device],
+                      }))
+                    }
+                })
+              })
+              
+          }
+        })
+      }
+    })
+  }
+
+  componentWillUnmount() {
+    this.firebaseListener()
+  }
+
+  render() {
+    let index = 0
+    const { classes } = this.props
+    return (
+      <Paper className={classes.root}>
+        <Table className={classes.table}>
+          <TableHead>
+            <TableRow>
+              <TableCell>Device</TableCell>
             </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </Paper>
-  );
+          </TableHead>
+          <TableBody>
+            {this.state.devices.map(device => {
+              index++
+              return <TableRow key={index}>
+                      <TableCell component="th" scope="row">
+                        <Link to={`/farm/${device.id}`} key = {device.id} style={{textDecoration: 'none'}}>
+                        {device.name}
+                        </Link>
+                      </TableCell>
+                    </TableRow>
+            })}
+          </TableBody>
+        </Table>
+      </Paper>
+    )
+  }
 }
 
 SimpleTable.propTypes = {
   classes: PropTypes.object.isRequired,
 };
 
-export default withStyles(styles)(SimpleTable);
+export default withAuthentication(withFirebase(withStyles(styles)(SimpleTable)))

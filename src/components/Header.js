@@ -8,9 +8,6 @@ import { withStyles } from '@material-ui/core/styles'
 import AppBar from '@material-ui/core/AppBar'
 import CssBaseline from '@material-ui/core/CssBaseline'
 import Toolbar from '@material-ui/core/Toolbar'
-import IconButton from '@material-ui/core/IconButton'
-import SearchIcon from '@material-ui/icons/Search'
-import MoreIcon from '@material-ui/icons/MoreVert'
 
 const styles = theme => ({
   text: {
@@ -71,9 +68,7 @@ function ForSignedIn(props) {
         <Toolbar className={classes.toolbar}>
           <SideMenu authUser={props.authUser} />
           <div>
-
             <SignOut/>
-
           </div>
         </Toolbar>
       </AppBar>
@@ -90,14 +85,6 @@ function ForNotSignedIn(props) {
       <AppBar position="static" color="primary" className={classes.appBar}>
         <Toolbar className={classes.toolbar}>
           <SideMenu authUser={props.authUser}/>
-          <div>
-            <IconButton color="inherit">
-              <SearchIcon />
-            </IconButton>
-            <IconButton color="inherit">
-              <MoreIcon />
-            </IconButton>
-          </div>
         </Toolbar>
       </AppBar>
     </React.Fragment>
